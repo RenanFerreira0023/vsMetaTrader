@@ -1,0 +1,15 @@
+# Configurações da API
+APP_NAME="MQL Robot Factory API"
+DEBUG=True
+HOST="0.0.0.0"
+PORT=8000
+
+# Configurações do Banco de Dados PostgreSQL
+DB_HOST="localhost"
+DB_PORT="5432"
+DB_USER="postgres"
+DB_PASSWORD="1234"
+DB_NAME="vsmetatrader"
+
+# RAG Config
+ROBOTS_PATH="./robots"

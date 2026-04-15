@@ -1,9 +1,0 @@
-# Folders
-__pycache__/
-venv/
-models/
-style/
-
-# Files
-.env
-app.py
