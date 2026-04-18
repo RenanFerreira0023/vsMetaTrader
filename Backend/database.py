@@ -4,8 +4,8 @@ from datetime import datetime
 import json
 from config import settings
 
-# Montar a URL de conexão do banco SQLite (para teste)
-DATABASE_URL = f"sqlite:///./{settings.DB_NAME}.db"
+# Montar a URL de conexão do banco PostgreSQL
+DATABASE_URL = f"postgresql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 
 # Criar Engine e Session Local
 engine = create_engine(DATABASE_URL)

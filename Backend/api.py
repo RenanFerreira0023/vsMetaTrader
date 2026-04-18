@@ -1,3 +1,8 @@
+import os
+# Forçar modo offline para evitar erros de conexão (DNS/HuggingFace)
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -5,7 +10,6 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from gpt4all import GPT4All
 from contextlib import asynccontextmanager
-import os
 import uvicorn
 import logging
 import sys
@@ -56,20 +60,25 @@ async def lifespan(app: FastAPI):
         state["model"] = GPT4All(
             settings.MODEL_NAME, 
             model_path=settings.MODEL_PATH, 
-            allow_download=True, 
+            allow_download=False, 
             device=settings.DEVICE,
             n_ctx=settings.CONTEXT_SIZE
         )
-        logger.info("✅ Modelo carregado com sucesso!")
+        logger.info(f"✅ Modelo carregado com sucesso no dispositivo: {settings.DEVICE}!")
     except Exception as e:
-        logger.critical(f"❌ Erro crítico ao carregar o modelo: {e}")
+        logger.critical(f"❌ Erro crítico ao carregar o modelo no dispositivo {settings.DEVICE}: {e}")
+        # Se o usuário solicitou especificamente 'gpu' e falhou, não fazemos fallback silencioso
         if settings.DEVICE == "gpu":
-            logger.warning("⚠️ Falha na GPU. Tentando fallback para CPU...")
+            logger.error("⚠️ Falha ao carregar na GPU. O processo NÃO usará a CPU como solicitado para manter a performance.")
+            raise e
+        else:
+            # Fallback genérico caso não seja GPU explicitamente
+            logger.warning("⚠️ Falha no dispositivo padrão. Tentando fallback para CPU...")
             try:
                 state["model"] = GPT4All(
                     settings.MODEL_NAME, 
                     model_path=settings.MODEL_PATH, 
-                    allow_download=True, 
+                    allow_download=False, 
                     device="cpu",
                     n_ctx=settings.CONTEXT_SIZE
                 )
@@ -77,8 +86,6 @@ async def lifespan(app: FastAPI):
             except Exception as cpu_e:
                 logger.critical(f"❌ Falha total ao carregar o modelo: {cpu_e}")
                 raise cpu_e
-        else:
-            raise e
     
     yield
     state.clear()
@@ -113,19 +120,45 @@ class IndexRobotsRequest(BaseModel):
     path: str
 
 # ─── Rotas ──────────────────────────────────────────────────────────────────
+from fastapi import Request
+import json
+import re
+
 @app.post("/chat")
-async def chat(request: ChatRequest):
+async def chat(request: Request):
     """
-    Rota para enviar um prompt ao modelo e receber a resposta via streaming.
+    Rota tolerante para receber prompts, aceitando JSONs 'quebrados' com quebras de linha manuais.
     """
+    body_bytes = await request.body()
+    body_str = body_bytes.decode("utf-8")
+
+    try:
+        # Tenta o parse normal primeiro
+        data = json.loads(body_str)
+    except json.JSONDecodeError:
+        # Se falhar, tenta limpar caracteres de controle (como quebras de linha reais dentro da string)
+        # Isso permite colar código MQL direto no JSON do Postman
+        try:
+            # Substitui quebras de linha reais por \n antes de tentar o parse
+            # Essa é uma solução 'suja' mas eficaz para o que você precisa
+            cleaned_body = re.sub(r'\n', '\\n', body_str)
+            # Remove quebras de linha que ficaram duplicadas ou em lugares errados
+            cleaned_body = re.sub(r'\\n\s*"', '"', cleaned_body)
+            data = json.loads(cleaned_body)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Erro ao processar JSON. Certifique-se de que os campos 'prompt' e 'session_uuid' estão presentes.")
+
+    prompt_text = data.get("prompt", "")
+    session_uuid = data.get("session_uuid") or str(uuid.uuid4())
+
+    if not prompt_text:
+        raise HTTPException(status_code=400, detail="O campo 'prompt' é obrigatório.")
+
     model = state.get("model")
     if not model:
         raise HTTPException(status_code=503, detail="Modelo não inicializado corretamente")
 
     try:
-        # Garantir que temos um UUID de sessão
-        session_uuid = request.session_uuid or str(uuid.uuid4())
-
         def response_generator(sess_uuid):
             db = SessionLocal()
             try:
@@ -145,7 +178,7 @@ async def chat(request: ChatRequest):
                     db.refresh(db_session)
 
                 # 2. Salvar Mensagem Atual do Usuário
-                user_msg = Message(session_id=db_session.id, role="user", content=request.prompt)
+                user_msg = Message(session_id=db_session.id, role="user", content=prompt_text)
                 db.add(user_msg)
                 db.commit()
 
@@ -154,7 +187,7 @@ async def chat(request: ChatRequest):
                 history.reverse() # Colocar de volta na ordem cronológica de leitura
 
                 # 4. Buscar contexto RAG relevante
-                rag_context = rag_engine.search_context(request.prompt, top_k=3)
+                rag_context = rag_engine.search_context(prompt_text, top_k=5)
                 context_str = ""
                 if rag_context:
                     context_str = "Aqui estão exemplos do seu estilo de programação:\n"
@@ -172,7 +205,7 @@ async def chat(request: ChatRequest):
                     formatted_prompt += f"{role_prefix}: {msg.content}\n"
                 
                 # Prompt atual
-                formatted_prompt += f"User: {request.prompt}\nAssistant:"
+                formatted_prompt += f"User: {prompt_text}\nAssistant:"
 
                 logger.info(f"Gerando resposta Agent Loop. Sessão: {sess_uuid}")
                 full_response = ""
@@ -208,6 +241,7 @@ async def chat(request: ChatRequest):
                             callback=stopper
                         ):
                             full_response += token
+                            print(token, end="", flush=True) # Log em tempo real no terminal
                             buffer += token
                             
                             # Lógica de intercepção de ferramentas durante o Streaming

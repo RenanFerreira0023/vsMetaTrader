@@ -3,10 +3,23 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from typing import List, Tuple, Dict, Any
+from config import settings
+
+import torch
 
 class RagEngine:
     def __init__(self, model_name: str = 'all-MiniLM-L6-v2'):
-        self.model = SentenceTransformer(model_name)
+        # Mapear dispositivo: SentenceTransformer (PyTorch) espera 'cuda' para placas NVIDIA.
+        # Aceitamos tanto 'gpu' quanto 'kompute' no settings.DEVICE.
+        torch_device = "cuda" if settings.DEVICE in ["gpu", "kompute"] else settings.DEVICE
+        
+        # Verificar se CUDA está realmente disponível no PyTorch instalado
+        if torch_device == "cuda" and not torch.cuda.is_available():
+            print("⚠️ Aviso: GPU (CUDA) solicitada para o RAG, mas o PyTorch instalado não suporta CUDA.")
+            print("💡 Para corrigir, execute: pip install torch --index-url https://download.pytorch.org/whl/cu121")
+            torch_device = "cpu"
+            
+        self.model = SentenceTransformer(model_name, device=torch_device)
         self.index = None
         self.chunks: List[str] = []
         self.metadata: List[Dict[str, Any]] = []

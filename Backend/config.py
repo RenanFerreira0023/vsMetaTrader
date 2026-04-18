@@ -1,3 +1,4 @@
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 from typing import List
 import os
@@ -16,9 +17,16 @@ class Settings(BaseSettings):
     DB_PASSWORD: str = "1234"
     DB_NAME: str = "vsmetatrader"
 
-# Agora incluído na classe Settings:
+    # Agora incluído na classe Settings:
     USE_GPU: bool = True
-    DEVICE: str = "gpu" if USE_GPU else "cpu"
+    DEVICE: str = "gpu"
+
+    @model_validator(mode='after')
+    def set_device(self):
+        # Garante que DEVICE respeite USE_GPU caso um deles seja alterado no .env
+        if not self.USE_GPU:
+            self.DEVICE = "cpu"
+        return self
 
 
     
@@ -34,9 +42,9 @@ class Settings(BaseSettings):
     TRUSTED_HOSTS: List[str] = ["*"]
     
     # Generative Config
-    CONTEXT_SIZE: int = 16384
+    CONTEXT_SIZE: int = 8192  
     MAX_TOKENS: int = 2048
-    TEMPERATURE: float = 0.6
+    TEMPERATURE: float = 0.1
 
     class Config:
         env_file = ".env"
