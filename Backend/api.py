@@ -151,6 +151,17 @@ async def chat(request: Request):
     prompt_text = data.get("prompt", "")
     session_uuid = data.get("session_uuid") or str(uuid.uuid4())
 
+    # --- Log de Auditoria (Backup do Body) ---
+    try:
+        log_dir = "request_logs"
+        os.makedirs(log_dir, exist_ok=True)
+        log_filename = f"{log_dir}/req_{session_uuid}_{int(uuid.uuid4().hex[:8], 16)}.json"
+        with open(log_filename, "w", encoding="utf-8") as f:
+            f.write(body_str)
+        logger.info(f"📥 Body da requisição salvo em: {log_filename}")
+    except Exception as e:
+        logger.warning(f"⚠️ Falha ao salvar log da requisição: {e}")
+
     if not prompt_text:
         raise HTTPException(status_code=400, detail="O campo 'prompt' é obrigatório.")
 
@@ -233,6 +244,9 @@ async def chat(request: Request):
                     stopper = ToolCallStopper()
 
                     with model.chat_session():
+                        # --- Filtro de Pensamento (<think>...</think>) ---
+                        in_thinking = False
+                        
                         for token in model.generate(
                             formatted_prompt,
                             max_tokens=settings.MAX_TOKENS, 
@@ -244,6 +258,23 @@ async def chat(request: Request):
                             print(token, end="", flush=True) # Log em tempo real no terminal
                             buffer += token
                             
+                            # Lógica de ocultação de pensamento
+                            if "<think>" in buffer and not in_thinking:
+                                parts = buffer.split("<think>")
+                                if parts[0]:
+                                    yield parts[0]
+                                in_thinking = True
+                                buffer = parts[1] if len(parts) > 1 else ""
+                            
+                            if in_thinking:
+                                if "</think>" in buffer:
+                                    parts = buffer.split("</think>")
+                                    in_thinking = False
+                                    buffer = parts[1] if len(parts) > 1 else ""
+                                else:
+                                    # Enquanto estiver pensando, não fazemos yield do conteúdo
+                                    continue
+
                             # Lógica de intercepção de ferramentas durante o Streaming
                             if not in_tool:
                                 if "<tool_call>" in buffer:
@@ -254,15 +285,15 @@ async def chat(request: Request):
                                     buffer = parts[1] if len(parts) > 1 else ""
                                     has_tool = True
                                 else:
-                                    # Yielding seguro: evita quebrar a tag "<tool_call>" no meio
+                                    # Yielding seguro: evita quebrar a tag "<tool_call>" ou "<think>" no meio
                                     idx = buffer.rfind("<")
                                     if idx != -1:
                                         chunk = buffer[:idx]
                                         if chunk:
                                             yield chunk
                                         buffer = buffer[idx:]
-                                        # Se a tag < encontrada não estiver indo em direção a tool_call, solte-a
-                                        if not "<tool_call>".startswith(buffer):
+                                        # Se a tag < encontrada não estiver indo em direção a tool_call ou think, solte-a
+                                        if not "<tool_call>".startswith(buffer) and not "<think>".startswith(buffer):
                                             yield buffer
                                             buffer = ""
                                     else:
@@ -273,10 +304,8 @@ async def chat(request: Request):
                                 # Não mostramos isso para o usuário
                                 if "</tool_call>" in buffer:
                                     parts = buffer.split("</tool_call>")
-                                    if parts[0] not in tool_data: # Segurança para não duplicar se receber pedaços
-                                        tool_data = parts[0] # Pega exatamente o recheio do json
-                                    # Em vez de break forçado (que causa erro na memória C++ da placa de vídeo),
-                                    # O stopper cuidará de desligar suavemente o motor e esvaziar a fila.
+                                    if parts[0] not in tool_data: 
+                                        tool_data = parts[0]
                                     pass
                                 else:
                                     tool_data = buffer
@@ -311,6 +340,41 @@ async def chat(request: Request):
                         full_response += f"\n[System Log: executed {t_name} -> {tool_result}]\n"
                         # E roda o 'while' novamente...
                     else:
+                        # Verificação extra: o modelo enviou código mas esqueceu de chamar a ferramenta de compilação?
+                        # Procuramos por blocos de código no full_response
+                        # Priorizamos blocos marcados como mql5 ou mql. Se não houver, pegamos o último bloco de código não-json.
+                        mql_blocks = re.findall(r"```(?:mql5|mql)\n([\s\S]+?)```", full_response)
+                        
+                        # Se não achou bloco MQL explícito, procura blocos genéricos que não pareçam JSON
+                        if not mql_blocks:
+                            generic_blocks = re.findall(r"```(?!\w*json)\w*\n([\s\S]+?)```", full_response)
+                            if generic_blocks:
+                                mql_blocks = [generic_blocks[-1]]
+
+                        # Se tem código e ainda não houve uma validação bem sucedida RECENTE deste bloco específico
+                        if mql_blocks:
+                            mql_code = mql_blocks[-1]
+                            
+                            # Checamos se já validamos este código exato nesta iteração
+                            if "Compilation Successful" not in full_response or iteration == 1:
+                                logger.info(f"⚠️ Código MQL detectado (Iteração {iteration}). Forçando validação...")
+                                
+                                yield "\n\n(Auto-validação: Compilando código gerado...)\n"
+                                
+                                from tools import compile_meta_trader_code
+                                comp_result = compile_meta_trader_code(mql_code)
+                                
+                                # Mostra o log de compilação para o usuário
+                                yield f"\n--- LOG DE COMPILAÇÃO ---\n{comp_result}\n--------------------------\n"
+                                
+                                # Injeta o resultado no fluxo como se fosse uma ferramenta
+                                tool_result = comp_result
+                                msg_to_add = f"\n[System Auto-Validation]: {tool_result}\nAssistant (Se houver erro acima, corrija o código. Lembre-se de usar indicadores nativos como iMA, iRSI e a classe CTrade. Se estiver OK, finalize):"
+                                formatted_prompt += f"\n{msg_to_add}"
+                                
+                                full_response += f"\n[System Log: auto-validation check phase {iteration} -> {tool_result}]\n"
+                                continue
+                        
                         break # Encerrou a resposta normalmente (e atendeu o aluno)
 
                 # 6. Salvar resposta no banco ao finalizar o stream

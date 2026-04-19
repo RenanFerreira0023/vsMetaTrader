@@ -42,8 +42,8 @@ class Settings(BaseSettings):
     TRUSTED_HOSTS: List[str] = ["*"]
     
     # Generative Config
-    CONTEXT_SIZE: int = 8192  
-    MAX_TOKENS: int = 2048
+    CONTEXT_SIZE: int = 16384  
+    MAX_TOKENS: int = 4096
     TEMPERATURE: float = 0.1
 
     class Config:
