@@ -1,4 +1,5 @@
 from rag import rag_engine
+from compiler_service import compile_mql_code
 
 def search_robot_examples(query: str) -> str:
     """Busca fragmentos de código relevantes nos robôs do usuário via RAG."""
@@ -25,6 +26,15 @@ def validate_mql_structure(code: str) -> str:
     else:
         return "Invalid structure: Missing OnInit/OnTick for EA or OnCalculate for Indicator."
 
+def compile_meta_trader_code(code: str) -> str:
+    """Compila o código MQL usando o MetaEditor real e retorna os erros se houver."""
+    result = compile_mql_code(code)
+    if result.get("success"):
+        return "Compilation Successful! No errors found."
+    else:
+        log = result.get("log", "Unknown error during compilation.")
+        return f"Compilation Failed! Errors found in log:\n\n{log}"
+
 def explain_mql_function(function_name: str) -> str:
     """Explica uma função MQL baseada nos exemplos dos robôs do usuário."""
     results = rag_engine.search_context(f"function {function_name}", top_k=5)
@@ -42,6 +52,7 @@ def explain_mql_function(function_name: str) -> str:
 TOOLS_REGISTRY = {
     "search_robot_examples": search_robot_examples,
     "validate_mql_structure": validate_mql_structure,
+    "compile_meta_trader_code": compile_meta_trader_code,
     "explain_mql_function": explain_mql_function
 }
 
@@ -51,6 +62,11 @@ TOOLS_DESCRIPTION = """Você tem acesso às seguintes ferramentas. Caso precise 
     "name": "search_robot_examples",
     "description": "Busca exemplos de código relevantes nos robôs do usuário para inspirar a geração de novo código MQL.",
     "parameters": {"query": "<descrição do que procurar>"}
+  },
+  {
+    "name": "compile_meta_trader_code",
+    "description": "Compila o código MQL usando o MetaEditor real. Use SEMPRE que gerar um código novo para garantir que ele não tem erros de sintaxe.",
+    "parameters": {"code": "<o código MQL completo para compilar>"}
   },
   {
     "name": "validate_mql_structure",

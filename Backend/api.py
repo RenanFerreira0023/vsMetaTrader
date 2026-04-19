@@ -210,9 +210,9 @@ async def chat(request: Request):
                 logger.info(f"Gerando resposta Agent Loop. Sessão: {sess_uuid}")
                 full_response = ""
                 
-                # 5. Agent Loop (ReAct) com limite de 3 ações autônomas
+                # 5. Agent Loop (ReAct) com limite de 5 ações autônomas (maior para permitir correções)
                 iteration = 0
-                max_iterations = 3
+                max_iterations = 5
                 
                 while iteration < max_iterations:
                     iteration += 1
