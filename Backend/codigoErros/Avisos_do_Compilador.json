@@ -1,0 +1,250 @@
+[
+    {
+        "errorCode": "21",
+        "description": "Registro incompleto de uma data na string datetime"
+    },
+    {
+        "errorCode": "22",
+        "description": "Número errado na string datetime para a data. Requisitos: Ano 1970 <= X <= 3000, Mês 1 <= X <= 12, Dia válido conforme mês"
+    },
+    {
+        "errorCode": "23",
+        "description": "Número errado na string datetime para hora. Requisitos: Hora 0 <= X < 24, Minuto 0 <= X < 60"
+    },
+    {
+        "errorCode": "24",
+        "description": "Cor inválida no formato RGB: componente menor que 0 ou maior que 255"
+    },
+    {
+        "errorCode": "25",
+        "description": "Caractere desconhecido em sequência de escape"
+    },
+    {
+        "errorCode": "26",
+        "description": "Volume de variáveis locais excede 512KB"
+    },
+    {
+        "errorCode": "29",
+        "description": "Enumeração duplicada"
+    },
+    {
+        "errorCode": "30",
+        "description": "Sobreposição de macro"
+    },
+    {
+        "errorCode": "31",
+        "description": "Variável declarada mas não utilizada"
+    },
+    {
+        "errorCode": "32",
+        "description": "Construtor deve ser do tipo void"
+    },
+    {
+        "errorCode": "33",
+        "description": "Destrutor deve ser do tipo void"
+    },
+    {
+        "errorCode": "34",
+        "description": "Constante fora da faixa de inteiros, convertida para double"
+    },
+    {
+        "errorCode": "35",
+        "description": "Número HEX muito longo (mais de 16 caracteres)"
+    },
+    {
+        "errorCode": "36",
+        "description": "String HEX inválida (sem grupos válidos)"
+    },
+    {
+        "errorCode": "37",
+        "description": "Sem função para executar"
+    },
+    {
+        "errorCode": "38",
+        "description": "Variável não inicializada sendo usada"
+    },
+    {
+        "errorCode": "41",
+        "description": "Função sem corpo e não utilizada"
+    },
+    {
+        "errorCode": "43",
+        "description": "Possível perda de dados em conversão"
+    },
+    {
+        "errorCode": "44",
+        "description": "Perda de precisão ao converter constante"
+    },
+    {
+        "errorCode": "45",
+        "description": "Diferença de sinais em comparação"
+    },
+    {
+        "errorCode": "46",
+        "description": "Problema na importação de função"
+    },
+    {
+        "errorCode": "47",
+        "description": "Descrição muito longa"
+    },
+    {
+        "errorCode": "48",
+        "description": "Buffers de indicador insuficientes"
+    },
+    {
+        "errorCode": "49",
+        "description": "Sem cor para plotagem"
+    },
+    {
+        "errorCode": "50",
+        "description": "Sem série gráfica para indicador"
+    },
+    {
+        "errorCode": "51",
+        "description": "Função OnStart não encontrada"
+    },
+    {
+        "errorCode": "52",
+        "description": "OnStart com parâmetros incorretos"
+    },
+    {
+        "errorCode": "53",
+        "description": "OnStart só pode existir em script"
+    },
+    {
+        "errorCode": "54",
+        "description": "OnInit com parâmetros incorretos"
+    },
+    {
+        "errorCode": "55",
+        "description": "OnInit não é usado em scripts"
+    },
+    {
+        "errorCode": "56",
+        "description": "OnDeinit com parâmetros incorretos"
+    },
+    {
+        "errorCode": "57",
+        "description": "OnDeinit não é usado em scripts"
+    },
+    {
+        "errorCode": "58",
+        "description": "Duas funções OnCalculate definidas"
+    },
+    {
+        "errorCode": "59",
+        "description": "Overflow ao calcular constante inteira"
+    },
+    {
+        "errorCode": "60",
+        "description": "Possível variável não inicializada"
+    },
+    {
+        "errorCode": "61",
+        "description": "Declaração impede acesso a variável local"
+    },
+    {
+        "errorCode": "62",
+        "description": "Declaração impede acesso a variável global"
+    },
+    {
+        "errorCode": "63",
+        "description": "Uso inválido em array estático"
+    },
+    {
+        "errorCode": "64",
+        "description": "Variável oculta variável predefinida"
+    },
+    {
+        "errorCode": "65",
+        "description": "Expressão sempre verdadeira ou falsa"
+    },
+    {
+        "errorCode": "66",
+        "description": "Uso inseguro de bool em operações matemáticas"
+    },
+    {
+        "errorCode": "67",
+        "description": "Resultado indefinido com operador menos em tipo sem sinal"
+    },
+    {
+        "errorCode": "68",
+        "description": "Formato de versão inválido (#property version)"
+    },
+    {
+        "errorCode": "69",
+        "description": "Declaração controlada vazia"
+    },
+    {
+        "errorCode": "70",
+        "description": "Assinatura inválida de função de evento"
+    },
+    {
+        "errorCode": "71",
+        "description": "Conversão implícita de estrutura necessária"
+    },
+    {
+        "errorCode": "72",
+        "description": "Acesso direto a membro de classe impossível"
+    },
+    {
+        "errorCode": "73",
+        "description": "Constante binária muito grande"
+    },
+    {
+        "errorCode": "74",
+        "description": "Diferença de const em método herdado"
+    },
+    {
+        "errorCode": "75",
+        "description": "Shift inválido em operação bit a bit"
+    },
+    {
+        "errorCode": "76",
+        "description": "Função deve retornar valor"
+    },
+    {
+        "errorCode": "77",
+        "description": "Função void retornando valor"
+    },
+    {
+        "errorCode": "78",
+        "description": "Nem todos caminhos retornam valor"
+    },
+    {
+        "errorCode": "79",
+        "description": "Expressões não permitidas em escopo global"
+    },
+    {
+        "errorCode": "80",
+        "description": "Possível erro de precedência de operador"
+    },
+    {
+        "errorCode": "81",
+        "description": "Duas funções OnCalculate, modo OHLC será usado"
+    },
+    {
+        "errorCode": "82",
+        "description": "Struct sem membros (1 byte)"
+    },
+    {
+        "errorCode": "83",
+        "description": "Valor de retorno deve ser verificado"
+    },
+    {
+        "errorCode": "84",
+        "description": "Indicador compilado em modo debug (baixa performance)"
+    },
+    {
+        "errorCode": "85",
+        "description": "Código de caractere fora do intervalo permitido"
+    },
+    {
+        "errorCode": "86",
+        "description": "Caractere não reconhecido"
+    },
+    {
+        "errorCode": "87",
+        "description": "Nenhuma propriedade de janela de indicador definida"
+    }
+]

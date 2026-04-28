@@ -1,0 +1,207 @@
+[
+    {
+        "errorCode": "10004",
+        "constant": "TRADE_RETCODE_REQUOTE",
+        "description": "Nova Cotação"
+    },
+    {
+        "errorCode": "10006",
+        "constant": "TRADE_RETCODE_REJECT",
+        "description": "Solicitação rejeitada"
+    },
+    {
+        "errorCode": "10007",
+        "constant": "TRADE_RETCODE_CANCEL",
+        "description": "Solicitação cancelada pelo negociador"
+    },
+    {
+        "errorCode": "10008",
+        "constant": "TRADE_RETCODE_PLACED",
+        "description": "Ordem colocada"
+    },
+    {
+        "errorCode": "10009",
+        "constant": "TRADE_RETCODE_DONE",
+        "description": "Solicitação concluída"
+    },
+    {
+        "errorCode": "10010",
+        "constant": "TRADE_RETCODE_DONE_PARTIAL",
+        "description": "Somente parte da solicitação foi concluída"
+    },
+    {
+        "errorCode": "10011",
+        "constant": "TRADE_RETCODE_ERROR",
+        "description": "Erro de processamento de solicitação"
+    },
+    {
+        "errorCode": "10012",
+        "constant": "TRADE_RETCODE_TIMEOUT",
+        "description": "Solicitação cancelada por expiração de tempo (timeout)"
+    },
+    {
+        "errorCode": "10013",
+        "constant": "TRADE_RETCODE_INVALID",
+        "description": "Solicitação inválida"
+    },
+    {
+        "errorCode": "10014",
+        "constant": "TRADE_RETCODE_INVALID_VOLUME",
+        "description": "Volume inválido na solicitação"
+    },
+    {
+        "errorCode": "10015",
+        "constant": "TRADE_RETCODE_INVALID_PRICE",
+        "description": "Preço inválido na solicitação"
+    },
+    {
+        "errorCode": "10016",
+        "constant": "TRADE_RETCODE_INVALID_STOPS",
+        "description": "Stops inválidos na solicitação"
+    },
+    {
+        "errorCode": "10017",
+        "constant": "TRADE_RETCODE_TRADE_DISABLED",
+        "description": "Negociação está desabilitada"
+    },
+    {
+        "errorCode": "10018",
+        "constant": "TRADE_RETCODE_MARKET_CLOSED",
+        "description": "Mercado está fechado"
+    },
+    {
+        "errorCode": "10019",
+        "constant": "TRADE_RETCODE_NO_MONEY",
+        "description": "Não existe dinheiro suficiente para completar a solicitação"
+    },
+    {
+        "errorCode": "10020",
+        "constant": "TRADE_RETCODE_PRICE_CHANGED",
+        "description": "Os preços se alteraram"
+    },
+    {
+        "errorCode": "10021",
+        "constant": "TRADE_RETCODE_PRICE_OFF",
+        "description": "Não existem cotações para processar a solicitação"
+    },
+    {
+        "errorCode": "10022",
+        "constant": "TRADE_RETCODE_INVALID_EXPIRATION",
+        "description": "Data de expiração da ordem inválida na solicitação"
+    },
+    {
+        "errorCode": "10023",
+        "constant": "TRADE_RETCODE_ORDER_CHANGED",
+        "description": "Estado da ordem alterada"
+    },
+    {
+        "errorCode": "10024",
+        "constant": "TRADE_RETCODE_TOO_MANY_REQUESTS",
+        "description": "Solicitações com frequência em excesso"
+    },
+    {
+        "errorCode": "10025",
+        "constant": "TRADE_RETCODE_NO_CHANGES",
+        "description": "Sem alterações na solicitação"
+    },
+    {
+        "errorCode": "10026",
+        "constant": "TRADE_RETCODE_SERVER_DISABLES_AT",
+        "description": "Autotrading desabilitado pelo servidor"
+    },
+    {
+        "errorCode": "10027",
+        "constant": "TRADE_RETCODE_CLIENT_DISABLES_AT",
+        "description": "Autotrading desabilitado pelo terminal cliente"
+    },
+    {
+        "errorCode": "10028",
+        "constant": "TRADE_RETCODE_LOCKED",
+        "description": "Solicitação bloqueada para processamento"
+    },
+    {
+        "errorCode": "10029",
+        "constant": "TRADE_RETCODE_FROZEN",
+        "description": "Ordem ou posição congeladas"
+    },
+    {
+        "errorCode": "10030",
+        "constant": "TRADE_RETCODE_INVALID_FILL",
+        "description": "Tipo de preenchimento de ordem inválido"
+    },
+    {
+        "errorCode": "10031",
+        "constant": "TRADE_RETCODE_CONNECTION",
+        "description": "Sem conexão com o servidor de negociação"
+    },
+    {
+        "errorCode": "10032",
+        "constant": "TRADE_RETCODE_ONLY_REAL",
+        "description": "Operação é permitida somente para contas reais"
+    },
+    {
+        "errorCode": "10033",
+        "constant": "TRADE_RETCODE_LIMIT_ORDERS",
+        "description": "O número de ordens pendentes atingiu o limite"
+    },
+    {
+        "errorCode": "10034",
+        "constant": "TRADE_RETCODE_LIMIT_VOLUME",
+        "description": "O volume de ordens e posições para o ativo atingiu o limite"
+    },
+    {
+        "errorCode": "10035",
+        "constant": "TRADE_RETCODE_INVALID_ORDER",
+        "description": "Incorreto ou proibido tipo de ordem"
+    },
+    {
+        "errorCode": "10036",
+        "constant": "TRADE_RETCODE_POSITION_CLOSED",
+        "description": "Posição já foi fechada"
+    },
+    {
+        "errorCode": "10038",
+        "constant": "TRADE_RETCODE_INVALID_CLOSE_VOLUME",
+        "description": "Volume de fechamento excede o volume da posição atual"
+    },
+    {
+        "errorCode": "10039",
+        "constant": "TRADE_RETCODE_CLOSE_ORDER_EXIST",
+        "description": "Já existe uma ordem de fechamento para essa posição"
+    },
+    {
+        "errorCode": "10040",
+        "constant": "TRADE_RETCODE_LIMIT_POSITIONS",
+        "description": "Limite de posições atingido"
+    },
+    {
+        "errorCode": "10041",
+        "constant": "TRADE_RETCODE_REJECT_CANCEL",
+        "description": "Ativação da ordem pendente rejeitada e ordem cancelada"
+    },
+    {
+        "errorCode": "10042",
+        "constant": "TRADE_RETCODE_LONG_ONLY",
+        "description": "Somente posições de compra são permitidas"
+    },
+    {
+        "errorCode": "10043",
+        "constant": "TRADE_RETCODE_SHORT_ONLY",
+        "description": "Somente posições de venda são permitidas"
+    },
+    {
+        "errorCode": "10044",
+        "constant": "TRADE_RETCODE_CLOSE_ONLY",
+        "description": "Apenas fechamento de posição permitido"
+    },
+    {
+        "errorCode": "10045",
+        "constant": "TRADE_RETCODE_FIFO_CLOSE",
+        "description": "Fechamento deve seguir regra FIFO"
+    },
+    {
+        "errorCode": "10046",
+        "constant": "TRADE_RETCODE_HEDGE_PROHIBITED",
+        "description": "Abertura de posições opostas proibida"
+    }
+]

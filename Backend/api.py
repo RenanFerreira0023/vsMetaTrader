@@ -3,25 +3,25 @@ import os
 os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from gpt4all import GPT4All
+import ollama
 from contextlib import asynccontextmanager
 import uvicorn
 import logging
 import sys
-from typing import Optional
-from config import settings
-from database import init_db, SessionLocal, User, Session as DBSession, Message
-from tools import TOOLS_REGISTRY, TOOLS_DESCRIPTION
 import json
+import re
 import uuid
+
+from config import settings
+from database import init_db
 from tasks import start_scheduler
-from prompts import get_system_prompt
 from rag import rag_engine
+from schemas import ChatRequest, IndexRobotsRequest
+from agent import generate_mql_response
 
 # ─── Configuração de Logging ────────────────────────────────────────────────
 logging.basicConfig(
@@ -45,47 +45,26 @@ async def lifespan(app: FastAPI):
     logger.info("⚙️ Acordando Trabalhadores de Fundo (Background Tasks)...")
     start_scheduler()
     
-    logger.info("🔍 Indexando robôs para RAG...")
-    try:
-        rag_engine.index_robots(settings.ROBOTS_PATH)
-        logger.info("✅ Robôs indexados com sucesso!")
-    except Exception as e:
-        logger.warning(f"⚠️ Erro ao indexar robôs: {e}")
+    logger.info("🔍 Indexando robôs para RAG em segundo plano...")
+    import threading
+    def start_indexing():
+        try:
+            rag_engine.index_robots(settings.ROBOTS_PATH)
+            logger.info("✅ Robôs indexados com sucesso!")
+        except Exception as e:
+            logger.warning(f"⚠️ Erro ao indexar robôs: {e}")
     
-    os.makedirs(settings.MODEL_PATH, exist_ok=True)
-    logger.info(f"⏳ Carregando modelo {settings.MODEL_NAME} em {settings.MODEL_PATH}...")
-    logger.info(f"🚀 Dispositivo configurado: {settings.DEVICE}")
+    threading.Thread(target=start_indexing, daemon=True).start()
     
+    logger.info(f"⏳ Verificando conexão com Ollama em {settings.OLLAMA_BASE_URL}...")
     try:
-        state["model"] = GPT4All(
-            settings.MODEL_NAME, 
-            model_path=settings.MODEL_PATH, 
-            allow_download=False, 
-            device=settings.DEVICE,
-            n_ctx=settings.CONTEXT_SIZE
-        )
-        logger.info(f"✅ Modelo carregado com sucesso no dispositivo: {settings.DEVICE}!")
+        client = ollama.AsyncClient(host=settings.OLLAMA_BASE_URL)
+        await client.list()
+        state["client"] = client
+        logger.info("✅ Conexão com Ollama estabelecida!")
     except Exception as e:
-        logger.critical(f"❌ Erro crítico ao carregar o modelo no dispositivo {settings.DEVICE}: {e}")
-        # Se o usuário solicitou especificamente 'gpu' e falhou, não fazemos fallback silencioso
-        if settings.DEVICE == "gpu":
-            logger.error("⚠️ Falha ao carregar na GPU. O processo NÃO usará a CPU como solicitado para manter a performance.")
-            raise e
-        else:
-            # Fallback genérico caso não seja GPU explicitamente
-            logger.warning("⚠️ Falha no dispositivo padrão. Tentando fallback para CPU...")
-            try:
-                state["model"] = GPT4All(
-                    settings.MODEL_NAME, 
-                    model_path=settings.MODEL_PATH, 
-                    allow_download=False, 
-                    device="cpu",
-                    n_ctx=settings.CONTEXT_SIZE
-                )
-                logger.info("✅ Modelo carregado em CPU (Fallback).")
-            except Exception as cpu_e:
-                logger.critical(f"❌ Falha total ao carregar o modelo: {cpu_e}")
-                raise cpu_e
+        logger.critical(f"❌ Erro ao conectar com Ollama: {e}")
+        raise e
     
     yield
     state.clear()
@@ -111,18 +90,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Modelos de Dados ───────────────────────────────────────────────────────
-class ChatRequest(BaseModel):
-    prompt: str
-    session_uuid: Optional[str] = None
-
-class IndexRobotsRequest(BaseModel):
-    path: str
-
 # ─── Rotas ──────────────────────────────────────────────────────────────────
-from fastapi import Request
-import json
-import re
 
 @app.post("/chat")
 async def chat(request: Request):
@@ -133,268 +101,46 @@ async def chat(request: Request):
     body_str = body_bytes.decode("utf-8")
 
     try:
-        # Tenta o parse normal primeiro
         data = json.loads(body_str)
     except json.JSONDecodeError:
-        # Se falhar, tenta limpar caracteres de controle (como quebras de linha reais dentro da string)
-        # Isso permite colar código MQL direto no JSON do Postman
         try:
-            # Substitui quebras de linha reais por \n antes de tentar o parse
-            # Essa é uma solução 'suja' mas eficaz para o que você precisa
             cleaned_body = re.sub(r'\n', '\\n', body_str)
-            # Remove quebras de linha que ficaram duplicadas ou em lugares errados
             cleaned_body = re.sub(r'\\n\s*"', '"', cleaned_body)
             data = json.loads(cleaned_body)
         except Exception:
             raise HTTPException(status_code=400, detail="Erro ao processar JSON. Certifique-se de que os campos 'prompt' e 'session_uuid' estão presentes.")
 
+    estagio0 = data.get("estagio0", "")
+    estagio1 = data.get("estagio1", "")
+    estagio2 = data.get("estagio2", "")
+    estagio3 = data.get("estagio3", "")
     prompt_text = data.get("prompt", "")
     session_uuid = data.get("session_uuid") or str(uuid.uuid4())
 
-    # --- Log de Auditoria (Backup do Body) ---
-    try:
-        log_dir = "request_logs"
-        os.makedirs(log_dir, exist_ok=True)
-        log_filename = f"{log_dir}/req_{session_uuid}_{int(uuid.uuid4().hex[:8], 16)}.json"
-        with open(log_filename, "w", encoding="utf-8") as f:
-            f.write(body_str)
-        logger.info(f"📥 Body da requisição salvo em: {log_filename}")
-    except Exception as e:
-        logger.warning(f"⚠️ Falha ao salvar log da requisição: {e}")
+    if estagio0 or estagio1 or estagio2 or estagio3:
+        prompt_text = (
+            f"ESTÁGIO 0 (Panorama Geral): {estagio0}\n"
+            f"ESTÁGIO 1 (Indicadores): {estagio1}\n"
+            f"ESTÁGIO 2 (Regra de Abertura): {estagio2}\n"
+            f"ESTÁGIO 3 (Proteção/Saída): {estagio3}"
+        )
 
     if not prompt_text:
-        raise HTTPException(status_code=400, detail="O campo 'prompt' é obrigatório.")
+        raise HTTPException(status_code=400, detail="O campo 'prompt' ou os estágios são obrigatórios.")
 
-    model = state.get("model")
-    if not model:
-        raise HTTPException(status_code=503, detail="Modelo não inicializado corretamente")
+    client = state.get("client")
+    if not client:
+        raise HTTPException(status_code=503, detail="Ollama não está disponível")
 
     try:
-        def response_generator(sess_uuid):
-            db = SessionLocal()
-            try:
-                # 1. Configurar Usuário e Sessão
-                default_user = db.query(User).filter_by(username="mql_user").first()
-                if not default_user:
-                    default_user = User(username="mql_user")
-                    db.add(default_user)
-                    db.commit()
-                    db.refresh(default_user)
-                    
-                db_session = db.query(DBSession).filter_by(session_uuid=sess_uuid).first()
-                if not db_session:
-                    db_session = DBSession(user_id=default_user.id, session_uuid=sess_uuid)
-                    db.add(db_session)
-                    db.commit()
-                    db.refresh(db_session)
-
-                # 2. Salvar Mensagem Atual do Usuário
-                user_msg = Message(session_id=db_session.id, role="user", content=prompt_text)
-                db.add(user_msg)
-                db.commit()
-
-                # 3. Resgatar Histórico Recente (últimas 10 mensagens)
-                history = db.query(Message).filter_by(session_id=db_session.id).order_by(Message.created_at.desc()).limit(10).all()
-                history.reverse() # Colocar de volta na ordem cronológica de leitura
-
-                # 4. Buscar contexto RAG relevante
-                rag_context = rag_engine.search_context(prompt_text, top_k=5)
-                context_str = ""
-                if rag_context:
-                    context_str = "Aqui estão exemplos do seu estilo de programação:\n"
-                    for chunk, meta in rag_context:
-                        context_str += f"De {meta['file']}:\n{chunk}\n\n"
-
-                # 5. Formatar o Prompt com Injeção de Histórico, Contexto RAG e Ferramentas
-                system_prompt = get_system_prompt()
-                
-                formatted_prompt = f"System: {system_prompt}\n\n{context_str}\n"
-                
-                # Injetar interações passadas
-                for msg in history[:-1]:
-                    role_prefix = "User" if msg.role == "user" else "Assistant"
-                    formatted_prompt += f"{role_prefix}: {msg.content}\n"
-                
-                # Prompt atual
-                formatted_prompt += f"User: {prompt_text}\nAssistant:"
-
-                logger.info(f"Gerando resposta Agent Loop. Sessão: {sess_uuid}")
-                full_response = ""
-                
-                # 5. Agent Loop (ReAct) com limite de 5 ações autônomas (maior para permitir correções)
-                iteration = 0
-                max_iterations = 5
-                
-                while iteration < max_iterations:
-                    iteration += 1
-                    buffer = ""
-                    in_tool = False
-                    tool_data = ""
-                    has_tool = False
-                    
-                    class ToolCallStopper:
-                        def __init__(self):
-                            self.buffer = ""
-                        def __call__(self, token_id, response):
-                            self.buffer += response
-                            if "</tool_call>" in self.buffer:
-                                return False
-                            return True
-                    
-                    stopper = ToolCallStopper()
-
-                    with model.chat_session():
-                        # --- Filtro de Pensamento (<think>...</think>) ---
-                        in_thinking = False
-                        
-                        for token in model.generate(
-                            formatted_prompt,
-                            max_tokens=settings.MAX_TOKENS, 
-                            temp=settings.TEMPERATURE, 
-                            streaming=True,
-                            callback=stopper
-                        ):
-                            full_response += token
-                            print(token, end="", flush=True) # Log em tempo real no terminal
-                            buffer += token
-                            
-                            # Lógica de ocultação de pensamento
-                            if "<think>" in buffer and not in_thinking:
-                                parts = buffer.split("<think>")
-                                if parts[0]:
-                                    yield parts[0]
-                                in_thinking = True
-                                buffer = parts[1] if len(parts) > 1 else ""
-                            
-                            if in_thinking:
-                                if "</think>" in buffer:
-                                    parts = buffer.split("</think>")
-                                    in_thinking = False
-                                    buffer = parts[1] if len(parts) > 1 else ""
-                                else:
-                                    # Enquanto estiver pensando, não fazemos yield do conteúdo
-                                    continue
-
-                            # Lógica de intercepção de ferramentas durante o Streaming
-                            if not in_tool:
-                                if "<tool_call>" in buffer:
-                                    parts = buffer.split("<tool_call>")
-                                    if parts[0]:
-                                        yield parts[0]
-                                    in_tool = True
-                                    buffer = parts[1] if len(parts) > 1 else ""
-                                    has_tool = True
-                                else:
-                                    # Yielding seguro: evita quebrar a tag "<tool_call>" ou "<think>" no meio
-                                    idx = buffer.rfind("<")
-                                    if idx != -1:
-                                        chunk = buffer[:idx]
-                                        if chunk:
-                                            yield chunk
-                                        buffer = buffer[idx:]
-                                        # Se a tag < encontrada não estiver indo em direção a tool_call ou think, solte-a
-                                        if not "<tool_call>".startswith(buffer) and not "<think>".startswith(buffer):
-                                            yield buffer
-                                            buffer = ""
-                                    else:
-                                        yield buffer
-                                        buffer = ""
-                            else:
-                                # Estamos dentro do bloco json da tool_call. 
-                                # Não mostramos isso para o usuário
-                                if "</tool_call>" in buffer:
-                                    parts = buffer.split("</tool_call>")
-                                    if parts[0] not in tool_data: 
-                                        tool_data = parts[0]
-                                    pass
-                                else:
-                                    tool_data = buffer
-
-                                    
-                        if not in_tool and buffer:
-                            yield buffer
-
-                    # Avaliar se o loop de LLM invocou uma ferramenta validada
-                    if has_tool:
-                        t_name = "unknown"
-                        try:
-                            clean_json_str = tool_data.strip()
-                            tool_exec = json.loads(clean_json_str)
-                            t_name = tool_exec.get("name", "unknown")
-                            t_params = tool_exec.get("parameters", {})
-                            
-                            logger.info(f"🛠️ Ferramenta acionada: {t_name} | Params: {t_params}")
-                            
-                            if t_name in TOOLS_REGISTRY:
-                                tool_result = TOOLS_REGISTRY[t_name](**t_params)
-                            else:
-                                tool_result = f"Error: A ferramenta '{t_name}' não existe."
-                                
-                        except Exception as e:
-                            logger.error(f"Erro ao parsear/executar a ferramenta: {e}")
-                            tool_result = f"Error interpreting tool parameters: {str(e)}. Make sure to respond only with standard JSON format."
-                            
-                        # Informar o modelo sobre o resultado e pedir que ele retome a resposta pedagógica
-                        msg_to_add = f"\n[Tool Execution Result ({t_name})]: {tool_result}\nAssistant (continuando):"
-                        formatted_prompt += f"\n<tool_call>{tool_data}</tool_call>{msg_to_add}"
-                        full_response += f"\n[System Log: executed {t_name} -> {tool_result}]\n"
-                        # E roda o 'while' novamente...
-                    else:
-                        # Verificação extra: o modelo enviou código mas esqueceu de chamar a ferramenta de compilação?
-                        # Procuramos por blocos de código no full_response
-                        # Priorizamos blocos marcados como mql5 ou mql. Se não houver, pegamos o último bloco de código não-json.
-                        mql_blocks = re.findall(r"```(?:mql5|mql)\n([\s\S]+?)```", full_response)
-                        
-                        # Se não achou bloco MQL explícito, procura blocos genéricos que não pareçam JSON
-                        if not mql_blocks:
-                            generic_blocks = re.findall(r"```(?!\w*json)\w*\n([\s\S]+?)```", full_response)
-                            if generic_blocks:
-                                mql_blocks = [generic_blocks[-1]]
-
-                        # Se tem código e ainda não houve uma validação bem sucedida RECENTE deste bloco específico
-                        if mql_blocks:
-                            mql_code = mql_blocks[-1]
-                            
-                            # Checamos se já validamos este código exato nesta iteração
-                            if "Compilation Successful" not in full_response or iteration == 1:
-                                logger.info(f"⚠️ Código MQL detectado (Iteração {iteration}). Forçando validação...")
-                                
-                                yield "\n\n(Auto-validação: Compilando código gerado...)\n"
-                                
-                                from tools import compile_meta_trader_code
-                                comp_result = compile_meta_trader_code(mql_code)
-                                
-                                # Mostra o log de compilação para o usuário
-                                yield f"\n--- LOG DE COMPILAÇÃO ---\n{comp_result}\n--------------------------\n"
-                                
-                                # Injeta o resultado no fluxo como se fosse uma ferramenta
-                                tool_result = comp_result
-                                msg_to_add = f"\n[System Auto-Validation]: {tool_result}\nAssistant (Se houver erro acima, corrija o código. Lembre-se de usar indicadores nativos como iMA, iRSI e a classe CTrade. Se estiver OK, finalize):"
-                                formatted_prompt += f"\n{msg_to_add}"
-                                
-                                full_response += f"\n[System Log: auto-validation check phase {iteration} -> {tool_result}]\n"
-                                continue
-                        
-                        break # Encerrou a resposta normalmente (e atendeu o aluno)
-
-                # 6. Salvar resposta no banco ao finalizar o stream
-                assistant_msg = Message(session_id=db_session.id, role="assistant", content=full_response)
-                db.add(assistant_msg)
-                db.commit()
-
-            except Exception as e:
-                logger.error(f"Erro durante gerador de resposta: {e}")
-                db.rollback()
-            finally:
-                db.close()
-
         headers = {"X-Session-ID": session_uuid}
-        # Adicionar Access-Control-Expose-Headers para que o frontend possa ler o atributo Session-ID
         headers["Access-Control-Expose-Headers"] = "X-Session-ID"
-        return StreamingResponse(response_generator(session_uuid), media_type="text/plain", headers=headers)
+        return StreamingResponse(
+            generate_mql_response(session_uuid, estagio0, estagio1, estagio2, estagio3, prompt_text, client), 
+            media_type="text/plain", 
+            headers=headers
+        )
             
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Erro ao gerar resposta: {e}")
         raise HTTPException(status_code=500, detail="Erro interno ao processar chat")
@@ -402,9 +148,9 @@ async def chat(request: Request):
 @app.get("/health")
 async def health():
     return {
-        "status": "ok" if "model" in state else "error", 
+        "status": "ok" if "client" in state else "error", 
         "model": settings.MODEL_NAME,
-        "device_config": settings.DEVICE
+        "ollama_url": settings.OLLAMA_BASE_URL
     }
 
 @app.post("/index-robots")
@@ -431,4 +177,3 @@ if __name__ == "__main__":
         port=settings.PORT, 
         reload=settings.DEBUG
     )
-

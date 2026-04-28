@@ -1,0 +1,386 @@
+[
+    {
+        "errorCode": "100",
+        "description": "Erro de leitura de arquivo"
+    },
+    {
+        "errorCode": "101",
+        "description": "Erro ao abrir arquivo EX5 para escrita"
+    },
+    {
+        "errorCode": "103",
+        "description": "Memória insuficiente para compilação"
+    },
+    {
+        "errorCode": "104",
+        "description": "Unidade sintática vazia"
+    },
+    {
+        "errorCode": "105",
+        "description": "Nome de arquivo incorreto em #include"
+    },
+    {
+        "errorCode": "106",
+        "description": "Erro ao acessar arquivo em #include"
+    },
+    {
+        "errorCode": "108",
+        "description": "Nome inválido para #define"
+    },
+    {
+        "errorCode": "109",
+        "description": "Comando de preprocessador desconhecido"
+    },
+    {
+        "errorCode": "110",
+        "description": "Ativo desconhecido para compilador"
+    },
+    {
+        "errorCode": "111",
+        "description": "Função não implementada"
+    },
+    {
+        "errorCode": "112",
+        "description": "Aspas duplas omitidas"
+    },
+    {
+        "errorCode": "113",
+        "description": "Aspas ou < omitidos"
+    },
+    {
+        "errorCode": "114",
+        "description": "Aspas simples omitidas"
+    },
+    {
+        "errorCode": "115",
+        "description": "Falta de >"
+    },
+    {
+        "errorCode": "116",
+        "description": "Tipo não especificado"
+    },
+    {
+        "errorCode": "117",
+        "description": "Return ausente em todos os caminhos"
+    },
+    {
+        "errorCode": "118",
+        "description": "Parêntese de chamada esperado"
+    },
+    {
+        "errorCode": "119",
+        "description": "Erro ao escrever EX5"
+    },
+    {
+        "errorCode": "120",
+        "description": "Acesso inválido a array"
+    },
+    {
+        "errorCode": "121",
+        "description": "Função deve retornar valor"
+    },
+    {
+        "errorCode": "122",
+        "description": "Declaração incorreta de destrutor"
+    },
+    {
+        "errorCode": "123",
+        "description": "Dois pontos ':' ausente"
+    },
+    {
+        "errorCode": "124",
+        "description": "Variável já declarada"
+    },
+    {
+        "errorCode": "125",
+        "description": "Identificador já declarado"
+    },
+    {
+        "errorCode": "126",
+        "description": "Nome de variável muito longo"
+    },
+    {
+        "errorCode": "127",
+        "description": "Estrutura já definida"
+    },
+    {
+        "errorCode": "128",
+        "description": "Estrutura não definida"
+    },
+    {
+        "errorCode": "129",
+        "description": "Membro de estrutura duplicado"
+    },
+    {
+        "errorCode": "130",
+        "description": "Membro de estrutura inexistente"
+    },
+    {
+        "errorCode": "131",
+        "description": "Erro de chaves"
+    },
+    {
+        "errorCode": "132",
+        "description": "Parêntese '(' esperado"
+    },
+    {
+        "errorCode": "133",
+        "description": "Chaves desbalanceadas"
+    },
+    {
+        "errorCode": "134",
+        "description": "Código muito complexo para compilação"
+    },
+    {
+        "errorCode": "135",
+        "description": "Erro ao abrir arquivo para leitura"
+    },
+    {
+        "errorCode": "136",
+        "description": "Memória insuficiente para arquivo fonte"
+    },
+    {
+        "errorCode": "137",
+        "description": "Variável esperada"
+    },
+    {
+        "errorCode": "138",
+        "description": "Referência não pode ser inicializada"
+    },
+    {
+        "errorCode": "140",
+        "description": "Atribuição esperada"
+    },
+    {
+        "errorCode": "141",
+        "description": "Chave '{' esperada"
+    },
+    {
+        "errorCode": "142",
+        "description": "Parâmetro deve ser array dinâmico"
+    },
+    {
+        "errorCode": "143",
+        "description": "Uso inválido de void"
+    },
+    {
+        "errorCode": "144",
+        "description": "Parêntese ou colchete sem par"
+    },
+    {
+        "errorCode": "145",
+        "description": "Par correspondente ausente"
+    },
+    {
+        "errorCode": "146",
+        "description": "Tamanho de array inválido"
+    },
+    {
+        "errorCode": "147",
+        "description": "Excesso de parâmetros"
+    },
+    {
+        "errorCode": "149",
+        "description": "Token inesperado"
+    },
+    {
+        "errorCode": "150",
+        "description": "Operação inválida"
+    },
+    {
+        "errorCode": "151",
+        "description": "Expressão void inválida"
+    },
+    {
+        "errorCode": "152",
+        "description": "Operador esperado"
+    },
+    {
+        "errorCode": "153",
+        "description": "Uso incorreto de break"
+    },
+    {
+        "errorCode": "154",
+        "description": "Ponto e vírgula esperado"
+    },
+    {
+        "errorCode": "155",
+        "description": "Vírgula esperada"
+    },
+    {
+        "errorCode": "156",
+        "description": "Tipo deve ser classe"
+    },
+    {
+        "errorCode": "157",
+        "description": "Expressão esperada"
+    },
+    {
+        "errorCode": "158",
+        "description": "Erro em número HEX"
+    },
+    {
+        "errorCode": "159",
+        "description": "String muito longa"
+    },
+    {
+        "errorCode": "160",
+        "description": "Definição de função inválida aqui"
+    },
+    {
+        "errorCode": "161",
+        "description": "Fim inesperado do programa"
+    },
+    {
+        "errorCode": "162",
+        "description": "Declaração antecipada proibida"
+    },
+    {
+        "errorCode": "163",
+        "description": "Função com retorno diferente já definida"
+    },
+    {
+        "errorCode": "164",
+        "description": "Função com parâmetros diferentes já definida"
+    },
+    {
+        "errorCode": "165",
+        "description": "Função já implementada"
+    },
+    {
+        "errorCode": "166",
+        "description": "Sobrecarga não encontrada"
+    },
+    {
+        "errorCode": "167",
+        "description": "Função void retornando valor"
+    },
+    {
+        "errorCode": "168",
+        "description": "Função não definida"
+    },
+    {
+        "errorCode": "170",
+        "description": "Valor esperado"
+    },
+    {
+        "errorCode": "171",
+        "description": "Case aceita apenas inteiros"
+    },
+    {
+        "errorCode": "172",
+        "description": "Case duplicado"
+    },
+    {
+        "errorCode": "173",
+        "description": "Inteiro esperado"
+    },
+    {
+        "errorCode": "174",
+        "description": "Nome de arquivo esperado em #import"
+    },
+    {
+        "errorCode": "175",
+        "description": "Expressão inválida no escopo global"
+    },
+    {
+        "errorCode": "176",
+        "description": "Parêntese ')' ausente"
+    },
+    {
+        "errorCode": "177",
+        "description": "Variável esperada à esquerda da atribuição"
+    },
+    {
+        "errorCode": "178",
+        "description": "Resultado de expressão não usado"
+    },
+    {
+        "errorCode": "179",
+        "description": "Declaração não permitida em case"
+    },
+    {
+        "errorCode": "180",
+        "description": "Conversão implícita string->número"
+    },
+    {
+        "errorCode": "181",
+        "description": "Conversão implícita número->string"
+    },
+    {
+        "errorCode": "182",
+        "description": "Chamada ambígua de função"
+    },
+    {
+        "errorCode": "183",
+        "description": "Else sem if"
+    },
+    {
+        "errorCode": "184",
+        "description": "Case/default sem switch"
+    },
+    {
+        "errorCode": "185",
+        "description": "Uso incorreto de reticência"
+    },
+    {
+        "errorCode": "186",
+        "description": "Inicialização com elementos em excesso"
+    },
+    {
+        "errorCode": "187",
+        "description": "Constante esperada em case"
+    },
+    {
+        "errorCode": "188",
+        "description": "Expressão constante requerida"
+    },
+    {
+        "errorCode": "189",
+        "description": "Constante não pode ser alterada"
+    },
+    {
+        "errorCode": "190",
+        "description": "Colchete ou vírgula esperado"
+    },
+    {
+        "errorCode": "191",
+        "description": "Enum já definido"
+    },
+    {
+        "errorCode": "192",
+        "description": "Enum não pode ter modificadores"
+    },
+    {
+        "errorCode": "193",
+        "description": "Membro enum duplicado"
+    },
+    {
+        "errorCode": "194",
+        "description": "Variável com mesmo nome já existe"
+    },
+    {
+        "errorCode": "195",
+        "description": "Estrutura com mesmo nome já existe"
+    },
+    {
+        "errorCode": "196",
+        "description": "Nome de membro enum esperado"
+    },
+    {
+        "errorCode": "197",
+        "description": "Inteiro esperado na expressão"
+    },
+    {
+        "errorCode": "198",
+        "description": "Divisão por zero em constante"
+    },
+    {
+        "errorCode": "199",
+        "description": "Número incorreto de parâmetros"
+    },
+    {
+        "errorCode": "200",
+        "description": "Referência deve ser variável"
+    }
+]

@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     # Agora incluído na classe Settings:
     USE_GPU: bool = True
     DEVICE: str = "gpu"
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
 
     @model_validator(mode='after')
     def set_device(self):
@@ -31,7 +32,7 @@ class Settings(BaseSettings):
 
     
     # Model Config
-    MODEL_NAME: str = "DeepSeek-R1-Distill-Llama-8B-Q4_0.gguf"
+    MODEL_NAME: str = "deepseek-coder:6.7b-instruct-q4_K_M"
     MODEL_PATH: str = "./models"
     
     # RAG Config
@@ -45,6 +46,7 @@ class Settings(BaseSettings):
     CONTEXT_SIZE: int = 16384  
     MAX_TOKENS: int = 4096
     TEMPERATURE: float = 0.1
+    MAX_AGENT_ITERATIONS: int = 30
 
     class Config:
         env_file = ".env"

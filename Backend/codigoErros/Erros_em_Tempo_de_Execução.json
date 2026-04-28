@@ -1,0 +1,200 @@
+{
+    "GERAL": [
+        {
+            "constant": "ERR_SUCCESS",
+            "errorCode": "0",
+            "description": "Operação concluída com sucesso"
+        },
+        {
+            "constant": "ERR_INTERNAL_ERROR",
+            "errorCode": "4001",
+            "description": "Erro interno inesperado"
+        },
+        {
+            "constant": "ERR_INVALID_PARAMETER",
+            "errorCode": "4003",
+            "description": "Parâmetro inválido"
+        },
+        {
+            "constant": "ERR_NOT_ENOUGH_MEMORY",
+            "errorCode": "4004",
+            "description": "Memória insuficiente"
+        }
+    ],
+    "GRAFICOS": [
+        {
+            "constant": "ERR_CHART_WRONG_ID",
+            "errorCode": "4101",
+            "description": "ID de gráfico inválido"
+        },
+        {
+            "constant": "ERR_CHART_NO_REPLY",
+            "errorCode": "4102",
+            "description": "Gráfico não responde"
+        },
+        {
+            "constant": "ERR_CHART_NOT_FOUND",
+            "errorCode": "4103",
+            "description": "Gráfico não encontrado"
+        },
+        {
+            "constant": "ERR_CHART_CANNOT_OPEN",
+            "errorCode": "4105",
+            "description": "Erro ao abrir gráfico"
+        }
+    ],
+    "OBJETOS_GRAFICOS": [
+        {
+            "constant": "ERR_OBJECT_ERROR",
+            "errorCode": "4201",
+            "description": "Erro com objeto gráfico"
+        },
+        {
+            "constant": "ERR_OBJECT_NOT_FOUND",
+            "errorCode": "4202",
+            "description": "Objeto gráfico não encontrado"
+        }
+    ],
+    "MARKET": [
+        {
+            "constant": "ERR_MARKET_UNKNOWN_SYMBOL",
+            "errorCode": "4301",
+            "description": "Ativo desconhecido"
+        },
+        {
+            "constant": "ERR_MARKET_NOT_SELECTED",
+            "errorCode": "4302",
+            "description": "Ativo não selecionado"
+        }
+    ],
+    "HISTORICO": [
+        {
+            "constant": "ERR_HISTORY_NOT_FOUND",
+            "errorCode": "4401",
+            "description": "Histórico não encontrado"
+        },
+        {
+            "constant": "ERR_HISTORY_TIMEOUT",
+            "errorCode": "4403",
+            "description": "Timeout ao carregar histórico"
+        }
+    ],
+    "VARIAVEIS_GLOBAIS": [
+        {
+            "constant": "ERR_GLOBALVARIABLE_NOT_FOUND",
+            "errorCode": "4501",
+            "description": "Variável global não encontrada"
+        }
+    ],
+    "TRADE": [
+        {
+            "constant": "ERR_TRADE_DISABLED",
+            "errorCode": "4752",
+            "description": "Trading desabilitado"
+        },
+        {
+            "constant": "ERR_TRADE_SEND_FAILED",
+            "errorCode": "4756",
+            "description": "Falha ao enviar ordem"
+        }
+    ],
+    "ARQUIVOS": [
+        {
+            "constant": "ERR_TOO_MANY_FILES",
+            "errorCode": "5001",
+            "description": "Muitos arquivos abertos"
+        },
+        {
+            "constant": "ERR_CANNOT_OPEN_FILE",
+            "errorCode": "5004",
+            "description": "Erro ao abrir arquivo"
+        },
+        {
+            "constant": "ERR_FILE_NOT_EXIST",
+            "errorCode": "5019",
+            "description": "Arquivo não existe"
+        }
+    ],
+    "STRINGS": [
+        {
+            "constant": "ERR_NO_STRING_DATE",
+            "errorCode": "5030",
+            "description": "Sem data na string"
+        },
+        {
+            "constant": "ERR_WRONG_STRING_TIME",
+            "errorCode": "5032",
+            "description": "Hora inválida na string"
+        }
+    ],
+    "ARRAYS": [
+        {
+            "constant": "ERR_INCOMPATIBLE_ARRAYS",
+            "errorCode": "5050",
+            "description": "Arrays incompatíveis"
+        }
+    ],
+    "OPENCL": [
+        {
+            "constant": "ERR_OPENCL_NOT_SUPPORTED",
+            "errorCode": "5100",
+            "description": "OpenCL não suportado"
+        }
+    ],
+    "DATABASE": [
+        {
+            "constant": "ERR_DATABASE_INTERNAL",
+            "errorCode": "5120",
+            "description": "Erro interno de banco de dados"
+        }
+    ],
+    "WEBREQUEST": [
+        {
+            "constant": "ERR_WEBREQUEST_INVALID_ADDRESS",
+            "errorCode": "5200",
+            "description": "URL inválida"
+        }
+    ],
+    "SOCKETS": [
+        {
+            "constant": "ERR_NETSOCKET_INVALIDHANDLE",
+            "errorCode": "5270",
+            "description": "Socket inválido"
+        }
+    ],
+    "CUSTOM_SYMBOL": [
+        {
+            "constant": "ERR_NOT_CUSTOM_SYMBOL",
+            "errorCode": "5300",
+            "description": "Símbolo customizado inválido"
+        }
+    ],
+    "CALENDARIO": [
+        {
+            "constant": "ERR_CALENDAR_TIMEOUT",
+            "errorCode": "5401",
+            "description": "Timeout no calendário econômico"
+        }
+    ],
+    "MATRIX": [
+        {
+            "constant": "ERR_MATRIX_INTERNAL",
+            "errorCode": "5700",
+            "description": "Erro interno em matriz/vetor"
+        }
+    ],
+    "ONNX": [
+        {
+            "constant": "ERR_ONNX_INTERNAL",
+            "errorCode": "5800",
+            "description": "Erro interno ONNX"
+        }
+    ],
+    "USER": [
+        {
+            "constant": "ERR_USER_ERROR_FIRST",
+            "errorCode": "65536",
+            "description": "Início dos erros definidos pelo usuário"
+        }
+    ]
+}

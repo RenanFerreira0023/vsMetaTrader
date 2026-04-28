@@ -78,9 +78,9 @@ def compile_mql_code(code: str, extension: str = ".mq5") -> Dict[str, Any]:
                 log_content = f.read()
             
             # Tenta encontrar a contagem de erros no final do log
-            # Exemplo: "0 error(s), 0 warning(s), 23 msec elapsed"
+            # Pode vir como "0 error(s)" ou "0 errors"
             import re
-            error_match = re.search(r"(\d+) error\(s\)", log_content)
+            error_match = re.search(r"(\d+)\s+error", log_content)
             if error_match:
                 errors_found = int(error_match.group(1))
                 is_success = (errors_found == 0)
