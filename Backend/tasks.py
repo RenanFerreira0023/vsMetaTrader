@@ -1,6 +1,6 @@
 import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from rag import rag_engine
+from rag.rag_service import rag_service
 from config import settings
 
 logger = logging.getLogger("tasks")
@@ -12,7 +12,7 @@ async def reindex_robots():
     """
     logger.info("⏰ [Job Background] Iniciando reindexação dos robôs...")
     try:
-        rag_engine.index_robots(settings.ROBOTS_PATH)
+        rag_service.index_robots(settings.ROBOTS_PATH)
         logger.info("✅ Robôs reindexados com sucesso.")
     except Exception as e:
         logger.error(f"Erro na reindexação: {e}")

@@ -76,11 +76,11 @@ CPositionInfo::~CPositionInfo(void)
   {
   }
 //+------------------------------------------------------------------+
-//| Get the property value "POSITION_TICKET"                         |
+//| Get the property value "POSITIOnTickET"                         |
 //+------------------------------------------------------------------+
 ulong CPositionInfo::Ticket(void) const
   {
-   return((ulong)PositionGetInteger(POSITION_TICKET));
+   return((ulong)PositionGetInteger(POSITIOnTickET));
   }
 //+------------------------------------------------------------------+
 //| Get the property value "POSITION_TIME"                           |

@@ -1,4 +1,5 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, JSON
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, JSON, Index, text
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from datetime import datetime
 import json
@@ -52,8 +53,24 @@ class RobotTemplate(Base):
     size_bytes = Column(Integer, nullable=False)
     indexed_at = Column(DateTime, default=datetime.utcnow)
 
+class VectorChunk(Base):
+    __tablename__ = "vector_chunks"
+    id = Column(Integer, primary_key=True, index=True)
+    file_path = Column(String(500), nullable=False)
+    content = Column(Text, nullable=False)
+    embedding = Column(Vector(768)) # nomic-embed-text tem 768 dimensões
+    metadata_json = Column(JSON, nullable=True) # type: OnInit, OnTick, etc.
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# Index para busca vetorial (HNSW é geralmente mais rápido que IVFFlat para datasets médios)
+# Nota: Requer que a extensão pgvector esteja instalada.
+# Index('vector_chunks_embedding_idx', VectorChunk.embedding, postgresql_using='hnsw', postgresql_with={'m': 16, 'ef_construction': 64}, postgresql_ops={'embedding': 'vector_cosine_ops'})
+
 # Função para criar o banco de dados (tabelas)
 def init_db():
+    with engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        conn.commit()
     Base.metadata.create_all(bind=engine)
 
 # Dependência do FastAPI

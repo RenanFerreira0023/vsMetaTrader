@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 
     
     # Model Config
-    MODEL_NAME: str = "deepseek-coder:6.7b-instruct-q4_K_M"
+    MODEL_NAME: str = "qwen2.5-coder:7b"
     MODEL_PATH: str = "./models"
     
     # RAG Config

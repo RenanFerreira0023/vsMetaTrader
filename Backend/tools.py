@@ -1,17 +1,17 @@
 import os
 import httpx
 import json
-from rag import rag_engine
-from compiler_service import compile_mql_code
+from rag.rag_service import rag_service
+from compiler.compiler_service import compile_mql_code
 
-def search_robot_examples(query: str) -> str:
+async def search_robot_examples(query: str) -> str:
     """Busca fragmentos de código relevantes nos robôs do usuário via RAG."""
-    results = rag_engine.search_context(query, top_k=3)
+    results = await rag_service.search(query, top_k=3)
     if not results:
         return "No relevant examples found in your robots."
     response = "Relevant code examples from your robots:\n"
-    for chunk, meta in results:
-        response += f"From {meta['file']} (chunk {meta['chunk_id']}):\n{chunk}\n\n"
+    for item in results:
+        response += f"From {item['file']} (similarity {item['score']:.2f}):\n{item['content']}\n\n"
     return response
 
 async def read_url_content(Url: str) -> str:
@@ -103,15 +103,15 @@ def compile_meta_trader_code(code: str) -> str:
         log = result.get("log", "Unknown error during compilation.")
         return f"Compilation Failed! Errors found in log:\n\n{log}"
 
-def explain_mql_function(function_name: str) -> str:
+async def explain_mql_function(function_name: str) -> str:
     """Explica uma função MQL baseada nos exemplos dos robôs do usuário."""
-    results = rag_engine.search_context(f"function {function_name}", top_k=5)
+    results = await rag_service.search(f"function {function_name}", top_k=5)
     if not results:
         return f"No information found for function {function_name}."
     response = f"Information about {function_name}:\n"
-    for chunk, meta in results:
-        if function_name in chunk:
-            response += f"From {meta['file']}:\n{chunk}\n\n"
+    for item in results:
+        if function_name in item['content']:
+            response += f"From {item['file']}:\n{item['content']}\n\n"
     return response
 
 # ─── Registro e Documentação de Ferramentas (Utilizado pelo ReAct) ────────
@@ -121,7 +121,6 @@ TOOLS_REGISTRY = {
     "validate_mql_structure": validate_mql_structure,
     "compile_meta_trader_code": compile_meta_trader_code,
     "explain_mql_function": explain_mql_function,
-    "lookup_mql_error": lookup_mql_error,
     "read_url_content": read_url_content
 }
 
@@ -136,11 +135,6 @@ TOOLS_DESCRIPTION = """Você tem acesso às seguintes ferramentas:
     "name": "read_url_content",
     "description": "Lê a documentação oficial do MQL5 em uma URL. Use para aprender como usar funções (iClose, iMA, etc) ou componentes novos.",
     "parameters": {"Url": "link da documentação"}
-  },
-  {
-    "name": "lookup_mql_error",
-    "description": "Busca a descrição oficial de um código de erro numérico (ex: 199, 4756) nos arquivos locais.",
-    "parameters": {"error_code": "código numérico do erro"}
   },
   {
     "name": "compile_meta_trader_code",

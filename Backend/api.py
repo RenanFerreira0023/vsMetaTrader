@@ -19,9 +19,9 @@ import uuid
 from config import settings
 from database import init_db
 from tasks import start_scheduler
-from rag import rag_engine
+from rag.rag_service import rag_service
 from schemas import ChatRequest, IndexRobotsRequest
-from agent import generate_mql_response
+from agents.mql_agent import mql_agent
 
 # ─── Configuração de Logging ────────────────────────────────────────────────
 logging.basicConfig(
@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
     import threading
     def start_indexing():
         try:
-            rag_engine.index_robots(settings.ROBOTS_PATH)
+            rag_service.index_robots(settings.ROBOTS_PATH)
             logger.info("✅ Robôs indexados com sucesso!")
         except Exception as e:
             logger.warning(f"⚠️ Erro ao indexar robôs: {e}")
@@ -136,7 +136,7 @@ async def chat(request: Request):
         headers = {"X-Session-ID": session_uuid}
         headers["Access-Control-Expose-Headers"] = "X-Session-ID"
         return StreamingResponse(
-            generate_mql_response(session_uuid, estagio0, estagio1, estagio2, estagio3, prompt_text, client), 
+            mql_agent.generate_ea(prompt_text), 
             media_type="text/plain", 
             headers=headers
         )
@@ -159,12 +159,8 @@ async def index_robots(request: IndexRobotsRequest):
     Reindexa os robôs do usuário para o RAG.
     """
     try:
-        rag_engine.index_robots(request.path)
-        stats = {
-            "files_indexed": len(rag_engine.chunks),
-            "total_chunks": len(rag_engine.chunks)
-        }
-        return {"message": "Robôs indexados com sucesso", "stats": stats}
+        rag_service.index_robots(request.path)
+        return {"message": "Robôs indexados com sucesso no pgvector"}
     except Exception as e:
         logger.error(f"Erro ao indexar robôs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
